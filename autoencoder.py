@@ -1,6 +1,11 @@
 import numpy as np
-from utils import regularize
+from utils import (regularize,
+                   dynamic_loss_plot_init,
+                   dynamic_loss_plot_update,
+                   dynamic_loss_plot_finish)
 import types
+
+LOADER = ['⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿']
 
 
 class Encoder:
@@ -72,6 +77,44 @@ class Autoencoder:
         self.encoder.backprop(error)
         error = v - reconstructed
         return np.sum(np.abs(error))
+
+    def train_dataset(self,
+                      data_set: list[np.ndarray],
+                      max_epoch: int,
+                      patience: int,
+                      display_loss: bool = False) -> list[float]:
+        if display_loss is True:
+            ax, line = dynamic_loss_plot_init()
+        losses = []
+        epoch = 0
+        no_improv = 0
+        prev_error = float('inf')
+        while True:
+            print(
+                f"{LOADER[epoch % len(LOADER)]} Training \t({epoch=} error={prev_error:.2f})", # noqa
+                end="\r"
+            )
+            error = 0
+            for x in data_set:
+                input = x.flatten()
+                error += self.train(input)
+            error /= len(data_set)
+            if error - prev_error <= 1e-8:
+                no_improv += 1
+            else:
+                no_improv = 0
+            prev_error = float(error)
+            losses.append(error)
+            if display_loss is True:
+                dynamic_loss_plot_update(ax, line, losses)
+            if no_improv > patience:
+                break
+            if epoch > max_epoch:
+                break
+            epoch += 1
+        if display_loss is True:
+            dynamic_loss_plot_finish(ax, line)
+        return losses
 
     def encode(self, v: np.ndarray) -> np.ndarray:
         return self.encoder.forward(v)
