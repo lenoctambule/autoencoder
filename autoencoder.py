@@ -1,64 +1,11 @@
 import numpy as np
-from utils import (regularize,
-                   dynamic_loss_plot_init,
+from utils import (dynamic_loss_plot_init,
                    dynamic_loss_plot_update,
                    dynamic_loss_plot_finish)
-import types
 from tqdm import tqdm
+from layers import NNLayer
 
 LOADER = ['⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿']
-
-
-class Encoder:
-    def __init__(self,
-                 in_size: int,
-                 out_size: int,
-                 lr: float,
-                 activation_func: types.FunctionType):
-        self.W = np.random.uniform(-1, 1, (in_size, out_size))
-        self.B = np.zeros((out_size))
-        self.lr = lr
-        self.last_input = None
-        self.last_output = None
-        self.activation_func = activation_func
-
-    def forward(self, V: np.ndarray) -> np.ndarray:
-        self.last_input = V
-        res = V @ self.W + self.B
-        self.last_output = regularize(self.activation_func(res))
-        return self.last_output
-
-    def backprop(self, error: np.ndarray):
-        dW = np.outer(self.last_input, error)
-        self.W -= self.lr * dW
-        self.B -= self.lr * error
-        return error @ self.W.T
-
-
-class Decoder:
-    def __init__(self,
-                 in_size: int,
-                 out_size: int,
-                 lr: float,
-                 activation_func):
-        self.W = np.random.uniform(-1, 1, (in_size, out_size))
-        self.B = np.zeros((out_size))
-        self.lr = lr
-        self.last_input = None
-        self.last_output = None
-        self.activation_func = activation_func
-
-    def forward(self, V: np.ndarray) -> np.ndarray:
-        self.last_input = V
-        res = V @ self.W + self.B
-        self.last_output = regularize(self.activation_func(res))
-        return self.last_output
-
-    def backprop(self, error: np.ndarray):
-        dW = np.outer(self.last_input, error)
-        self.W -= self.lr * dW
-        self.B -= self.lr * error
-        return error @ self.W.T
 
 
 class Autoencoder:
@@ -67,8 +14,8 @@ class Autoencoder:
                  bottleneck: int,
                  lr: float,
                  activation_func):
-        self.encoder = Encoder(in_len, bottleneck, lr, activation_func)
-        self.decoder = Decoder(bottleneck, in_len, lr, activation_func)
+        self.encoder = NNLayer(in_len, bottleneck, lr, activation_func)
+        self.decoder = NNLayer(bottleneck, in_len, lr, activation_func)
 
     def train(self, v: np.ndarray) -> float:
         encoded = self.encoder.forward(v)
@@ -89,10 +36,10 @@ class Autoencoder:
         epoch = 0
         no_improv = 0
         prev_error = float('inf')
-        with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar :
+        with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar:
             while True:
                 lbar.set_description(
-                    f"{LOADER[epoch % len(LOADER)]} Training ({epoch=} error={prev_error:.2f})",
+                    f"{LOADER[epoch % len(LOADER)]} Training ({epoch=} error={prev_error:.2f})", # noqa
                 )
                 lbar.update()
                 error = 0
