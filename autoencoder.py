@@ -53,8 +53,7 @@ class Decoder:
         self.last_output = regularize(self.activation_func(res))
         return self.last_output
 
-    def backprop(self, target: np.ndarray):
-        error = self.last_output - target
+    def backprop(self, error: np.ndarray):
         dW = np.outer(self.last_input, error)
         self.W -= self.lr * dW
         self.B -= self.lr * error
@@ -73,7 +72,7 @@ class Autoencoder:
     def train(self, v: np.ndarray) -> float:
         encoded = self.encoder.forward(v)
         reconstructed = self.decoder.forward(encoded)
-        error = self.decoder.backprop(v)
+        error = self.decoder.backprop(v - reconstructed)
         self.encoder.backprop(error)
         error = v - reconstructed
         return np.sum(np.abs(error))
@@ -99,7 +98,7 @@ class Autoencoder:
                 input = x.flatten()
                 error += self.train(input)
             error /= len(data_set)
-            if error - prev_error <= 1e-8:
+            if prev_error - error <= 1e-8:
                 no_improv += 1
             else:
                 no_improv = 0
@@ -114,6 +113,7 @@ class Autoencoder:
             epoch += 1
         if display_loss is True:
             dynamic_loss_plot_finish(ax, line)
+        print("\r#Training complete !")
         return losses
 
     def encode(self, v: np.ndarray) -> np.ndarray:
