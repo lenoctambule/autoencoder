@@ -91,7 +91,6 @@ class Autoencoder:
         while True:
             print(
                 f"{LOADER[epoch % len(LOADER)]} Training \t({epoch=} error={prev_error:.2f})", # noqa
-                end="\r"
             )
             error = 0
             for x in data_set:
@@ -113,7 +112,7 @@ class Autoencoder:
             epoch += 1
         if display_loss is True:
             dynamic_loss_plot_finish(ax, line)
-        print("\r#Training complete !")
+        print("#Training complete !")
         return losses
 
     def encode(self, v: np.ndarray) -> np.ndarray:
