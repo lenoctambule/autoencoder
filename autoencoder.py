@@ -71,6 +71,6 @@ class Autoencoder:
 
     def encode(self, v: np.ndarray) -> np.ndarray:
         return self.encoder.forward(v)
-    
+
     def decode(self, v: np.ndarray) -> np.ndarray:
         return self.decoder.forward(v)
