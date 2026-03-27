@@ -10,6 +10,7 @@ class Encoder:
                  lr: float,
                  activation_func: types.FunctionType):
         self.W = np.random.uniform(-1, 1, (in_size, out_size))
+        self.B = np.zeros((out_size))
         self.lr = lr
         self.last_input = None
         self.last_output = None
@@ -17,13 +18,14 @@ class Encoder:
 
     def forward(self, V: np.ndarray) -> np.ndarray:
         self.last_input = V
-        z = V @ self.W
-        self.last_output = regularize(self.activation_func(z))
+        res = V @ self.W + self.B
+        self.last_output = regularize(self.activation_func(res))
         return self.last_output
 
     def backprop(self, error: np.ndarray):
         dW = np.outer(self.last_input, error)
         self.W -= self.lr * dW
+        self.B -= self.lr * error
         return error @ self.W.T
 
 
@@ -34,6 +36,7 @@ class Decoder:
                  lr: float,
                  activation_func):
         self.W = np.random.uniform(-1, 1, (in_size, out_size))
+        self.B = np.zeros((out_size))
         self.lr = lr
         self.last_input = None
         self.last_output = None
@@ -41,14 +44,15 @@ class Decoder:
 
     def forward(self, V: np.ndarray) -> np.ndarray:
         self.last_input = V
-        z = V @ self.W
-        self.last_output = regularize(self.activation_func(z))
+        res = V @ self.W + self.B
+        self.last_output = regularize(self.activation_func(res))
         return self.last_output
 
     def backprop(self, target: np.ndarray):
         error = self.last_output - target
         dW = np.outer(self.last_input, error)
         self.W -= self.lr * dW
+        self.B -= self.lr * error
         return error @ self.W.T
 
 

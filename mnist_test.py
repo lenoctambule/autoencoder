@@ -18,7 +18,7 @@ def mnist_embed():
     prev_error = float('inf')
     losses = []
     epoch = 0
-    x_train = x_train[:1_000]
+    x_train = x_train[:]
     while True:
         error = 0
         for x in x_train:
@@ -30,10 +30,10 @@ def mnist_embed():
         prev_error = error
         losses.append(error)
         dynamic_loss_plot_update(ax, line, losses)
-        if NO_IMPROV > 10:
+        if NO_IMPROV > 5:
             print('Done !')
             break
-        if epoch > 200:
+        if epoch > 500:
             break
         epoch += 1
     dynamic_loss_plot_finish(ax, line)
