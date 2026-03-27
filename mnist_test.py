@@ -53,4 +53,14 @@ def mnist_embed(
 
 
 if __name__ == "__main__":
-    mnist_embed(10, 1000, 5)
+    import argparse
+    import sys
+
+    options = "b:e:p:"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-b', type=int, nargs='+', default=50)
+    parser.add_argument('-e', type=int, nargs='+', default=1000)
+    parser.add_argument('-p', type=int, nargs='+', default=5)
+    args = parser.parse_args(sys.argv[1:])
+
+    mnist_embed(args.b, args.e, args.p)
