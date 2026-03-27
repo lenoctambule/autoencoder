@@ -72,7 +72,7 @@ class Autoencoder:
     def train(self, v: np.ndarray) -> float:
         encoded = self.encoder.forward(v)
         reconstructed = self.decoder.forward(encoded)
-        error = self.decoder.backprop(v - reconstructed)
+        error = self.decoder.backprop(reconstructed - v)
         self.encoder.backprop(error)
         error = v - reconstructed
         return np.sum(np.abs(error))
