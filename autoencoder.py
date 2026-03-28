@@ -53,7 +53,8 @@ class Autoencoder:
                 for x in data_set:
                     error += self.train(x)
                 error /= len(data_set)
-                if prev_error - error <= 1e-8:
+                derror = prev_error - error
+                if derror <= 0 or abs(derror) < 1e-8:
                     no_improv += 1
                 else:
                     no_improv = 0
@@ -81,3 +82,10 @@ class Autoencoder:
         code = self.encode(v)
         out = self.decode(code)
         return out, code
+
+    def save(self, path: str):
+        np.save(path, self)
+
+    def load(path: str) -> 'Autoencoder':
+        data = np.load(path, allow_pickle=True)
+        return data.item()
