@@ -3,27 +3,28 @@ from utils import (dynamic_loss_plot_init,
                    dynamic_loss_plot_update,
                    dynamic_loss_plot_finish)
 from tqdm import tqdm
-from layers import NNLayer
+from layers import DeepNNLayer
 
 LOADER = ['⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿']
 
 
 class Autoencoder:
     def __init__(self,
-                 in_len: int,
-                 bottleneck: int,
+                 encoder_layers: list[int],
+                 decoder_layers: list[int],
                  lr: float,
                  activation_func):
-        self.encoder = NNLayer(in_len, bottleneck, lr, activation_func)
-        self.decoder = NNLayer(bottleneck, in_len, lr, activation_func)
+        self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
+        self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
 
-    def train(self, v: np.ndarray) -> float:
-        encoded = self.encoder.forward(v)
-        reconstructed = self.decoder.forward(encoded)
-        error = self.decoder.backprop(reconstructed - v)
-        self.encoder.backprop(error)
-        error = v - reconstructed
-        return np.sum(np.abs(error))
+    def train(self, v: np.ndarray):
+        out = self.decoder.forward(
+            self.encoder.forward(v)
+        )
+        self.encoder.backprop(
+            self.decoder.backprop(out - v)
+        )
+        return np.sum(np.abs(out - v)) / len(v)
 
     def train_dataset(self,
                       data_set: list[np.ndarray],
@@ -60,10 +61,10 @@ class Autoencoder:
                 if epoch > max_epoch:
                     break
                 epoch += 1
-            if display_loss is True:
-                dynamic_loss_plot_finish(ax, line)
-            print("#Training complete !")
-            return losses
+        print("Training complete !")
+        if display_loss is True:
+            dynamic_loss_plot_finish(ax, line)
+        return losses
 
     def encode(self, v: np.ndarray) -> np.ndarray:
         return self.encoder.forward(v)
