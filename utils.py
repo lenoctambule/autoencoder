@@ -25,10 +25,10 @@ def regularize(v: np.ndarray) -> np.ndarray:
     return (v - v_min) / (v_max - v_min)
 
 
-def dynamic_loss_plot_init():
+def dynamic_loss_plot_init(losses: list):
     plt.ion()
     fig, ax = plt.subplots()
-    line, = ax.plot([], [], label="Loss")
+    line, = ax.plot([0], losses, label="Loss")
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Loss")
     ax.set_title("Training Loss")

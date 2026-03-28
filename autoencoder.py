@@ -17,6 +17,12 @@ class Autoencoder:
         self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
         self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
 
+    def loss(self, data_set: list[np.ndarray]) -> float:
+        loss = 0
+        for x in data_set:
+            loss += np.sum(np.abs(x - self.forward(x)[0])) / len(x)
+        return loss / len(data_set)
+
     def train(self, v: np.ndarray):
         out = self.decoder.forward(
             self.encoder.forward(v)
@@ -31,12 +37,12 @@ class Autoencoder:
                       max_epoch: int,
                       patience: int,
                       display_loss: bool = False) -> list[float]:
+        losses = [self.loss(data_set)]
         if display_loss is True:
-            ax, line = dynamic_loss_plot_init()
-        losses = []
+            ax, line = dynamic_loss_plot_init(losses)
         epoch = 0
         no_improv = 0
-        prev_error = float('inf')
+        prev_error = losses[0]
         with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar:
             while True:
                 lbar.set_description(
@@ -45,8 +51,7 @@ class Autoencoder:
                 lbar.update()
                 error = 0
                 for x in data_set:
-                    input = x.flatten()
-                    error += self.train(input)
+                    error += self.train(x)
                 error /= len(data_set)
                 if prev_error - error <= 1e-8:
                     no_improv += 1
@@ -71,3 +76,8 @@ class Autoencoder:
 
     def decode(self, v: np.ndarray) -> np.ndarray:
         return self.decoder.forward(v)
+
+    def forward(self, v: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        code = self.encode(v)
+        out = self.decode(code)
+        return out, code
