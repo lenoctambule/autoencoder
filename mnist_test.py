@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from autoencoder import Autoencoder
-from utils import leaky_relu
+from activations import LeakyReLU
 
 
 def load_mnist() -> list[np.ndarray]:
@@ -32,7 +32,7 @@ def mnist_train(
         [in_len, 64, 16],
         [16, 64, in_len],
         0.01,
-        leaky_relu
+        LeakyReLU()
     )
     autoencoder.train_dataset(
         x_train,

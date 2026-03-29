@@ -1,6 +1,6 @@
 import numpy as np
-import types
 from utils import normalize
+from activations import ActivationFunc
 
 
 class NNLayer:
@@ -8,7 +8,7 @@ class NNLayer:
                  in_size: int,
                  out_size: int,
                  lr: float,
-                 activation_func: types.FunctionType):
+                 activation_func: ActivationFunc):
         self.W = np.random.uniform(-1, 1, (in_size, out_size))
         self.B = np.zeros((out_size))
         self.lr = lr
@@ -18,7 +18,7 @@ class NNLayer:
         self.activation_func = activation_func
 
     def __str__(self):
-        return f'[ {self.W.shape[0]} => {self.W.shape[1]}\tlr:{self.lr}\tactivation:{self.activation_func.__name__} ]' # noqa
+        return f'[ {self.W.shape[0]} => {self.W.shape[1]}\tlr:{self.lr}\tactivation:{self.activation_func.__class__.__name__} ]' # noqa
 
     def forward(self, V: np.ndarray) -> np.ndarray:
         self.input = normalize(V)
@@ -29,7 +29,7 @@ class NNLayer:
         return self.output
 
     def backprop(self, error: np.ndarray) -> np.ndarray:
-        error *= self.activation_func(self.output_linear, True)
+        error *= self.activation_func.derivative(self.output_linear)
         ret = self.W @ error
         dW = np.outer(self.input, error) * self.lr
         dB = error * self.lr
@@ -42,7 +42,7 @@ class DeepNNLayer:
     def __init__(self,
                  layers: list[int],
                  lr: float,
-                 activation_func: types.FunctionType):
+                 activation_func: ActivationFunc):
         self.layers: list[NNLayer] = []
         for i in range(len(layers) - 1):
             self.layers.append(

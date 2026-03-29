@@ -4,6 +4,7 @@ from utils import (dynamic_loss_plot_init,
                    dynamic_loss_plot_finish)
 from tqdm import tqdm
 from layers import DeepNNLayer
+from activations import ActivationFunc
 
 LOADER = ['⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿']
 
@@ -13,7 +14,7 @@ class Autoencoder:
                  encoder_layers: list[int],
                  decoder_layers: list[int],
                  lr: float,
-                 activation_func):
+                 activation_func: ActivationFunc):
         self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
         self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
 
@@ -49,7 +50,7 @@ class Autoencoder:
         with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar:
             while True:
                 lbar.set_description(
-                    f"{LOADER[epoch % len(LOADER)]} Training ({epoch=} error={float(prev_error):.6f}", # noqa
+                    f"{LOADER[epoch % len(LOADER)]} Training ({epoch=} error={float(prev_error):.6f})", # noqa
                 )
                 lbar.update()
                 error = 0
