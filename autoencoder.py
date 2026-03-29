@@ -15,6 +15,10 @@ class Autoencoder:
                  decoder_layers: list[int],
                  lr: float,
                  activation_func: ActivationFunc):
+        if encoder_layers[-1] != decoder_layers[0]:
+            raise Exception(
+                f"Encoder output and decoder input don't match {encoder_layers[-1]} != {encoder_layers[0]}" # noqa
+            )
         self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
         self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
 
