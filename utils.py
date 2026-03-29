@@ -15,6 +15,12 @@ def relu(x: np.ndarray, derivative=False) -> np.ndarray:
     return x * (x > 0)
 
 
+def leaky_relu(x: np.ndarray, derivative=False, k=0.01) -> np.ndarray:
+    if derivative:
+        return 1 * (x > 0) + k * (x <= 0)
+    return x * (x > 0) + x * 0.01 * (x <= 0)
+
+
 def normalize(v: np.ndarray) -> np.ndarray:
     return v / (np.linalg.norm(v) + 1e-8)
 

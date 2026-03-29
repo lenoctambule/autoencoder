@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from autoencoder import Autoencoder
-from utils import relu, regularize
+from utils import leaky_relu
 
 
 def load_mnist() -> list[np.ndarray]:
@@ -32,7 +32,7 @@ def mnist_train(
         [in_len, 64, 16],
         [16, 64, in_len],
         0.01,
-        relu
+        leaky_relu
     )
     autoencoder.train_dataset(
         x_train,
@@ -56,7 +56,6 @@ def mnist_test(filename: str):
     idx = np.random.randint(0, len(x_test))
     example: np.ndarray = x_test[idx]
     output, code = autoencoder.forward(example.flatten())
-    output = regularize(output)
     plt.subplot(1, 3, 1)
     plt.matshow(
         example.reshape(img_shape),
