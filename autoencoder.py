@@ -46,15 +46,15 @@ class Autoencoder:
         with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar:
             while True:
                 lbar.set_description(
-                    f"{LOADER[epoch % len(LOADER)]} Training ({epoch=} error={prev_error:.2f})", # noqa
+                    f"{LOADER[epoch % len(LOADER)]} Training ({epoch=} error={float(prev_error):.6f}", # noqa
                 )
                 lbar.update()
                 error = 0
-                for x in data_set:
+                for x in tqdm(data_set, leave=False):
                     error += self.train(x)
                 error /= len(data_set)
                 derror = prev_error - error
-                if derror <= 0 or abs(derror) < 1e-8:
+                if derror <= 0 or abs(derror) < 1e-4:
                     no_improv += 1
                 else:
                     no_improv = 0
@@ -84,8 +84,10 @@ class Autoencoder:
         return out, code
 
     def save(self, path: str):
+        path = path.removesuffix('.npy')
         np.save(path, self)
 
     def load(path: str) -> 'Autoencoder':
+        path = path.removesuffix('.npy') + '.npy'
         data = np.load(path, allow_pickle=True)
         return data.item()

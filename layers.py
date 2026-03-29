@@ -1,6 +1,6 @@
 import numpy as np
 import types
-from utils import regularize
+from utils import normalize
 
 
 class NNLayer:
@@ -12,28 +12,34 @@ class NNLayer:
         self.W = np.random.uniform(-1, 1, (in_size, out_size))
         self.B = np.zeros((out_size))
         self.lr = lr
-        self.last_input = None
-        self.last_output = None
+        self.input = None
+        self.output = None
+        self.output_linear = None
         self.activation_func = activation_func
 
     def forward(self, V: np.ndarray) -> np.ndarray:
-        self.last_input = V
-        res = V @ self.W + self.B
-        self.last_output = regularize(self.activation_func(res))
-        return self.last_output
+        self.input = normalize(V)
+        self.output_linear = self.input @ self.W + self.B
+        self.output = self.activation_func(
+                self.output_linear
+            )
+        return self.output
 
     def backprop(self, error: np.ndarray) -> np.ndarray:
-        dW = np.outer(self.last_input, error)
-        self.W -= self.lr * dW
-        self.B -= self.lr * error
-        return error @ self.W.T
+        error *= self.activation_func(self.output_linear, True)
+        ret = self.W @ error
+        dW = np.outer(self.input, error) * self.lr
+        dB = error * self.lr
+        self.W -= dW
+        self.B -= dB
+        return ret
 
 
 class DeepNNLayer:
     def __init__(self,
                  layers: list[int],
                  lr: float,
-                 activation_func):
+                 activation_func: types.FunctionType):
         self.layers: list[NNLayer] = []
         for i in range(len(layers) - 1):
             self.layers.append(
@@ -45,13 +51,11 @@ class DeepNNLayer:
                 )
 
     def forward(self, v: np.ndarray) -> np.ndarray:
-        v_i = v
         for layer in self.layers:
-            v_i = layer.forward(v_i)
-        return v_i
+            v = layer.forward(v)
+        return v
 
     def backprop(self, error: np.ndarray) -> np.ndarray:
-        error_i = error
         for layer in self.layers[::-1]:
-            error_i = layer.backprop(error_i)
-        return error_i
+            error = layer.backprop(error)
+        return error

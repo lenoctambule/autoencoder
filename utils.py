@@ -9,7 +9,9 @@ def softmax(v: np.ndarray) -> np.ndarray:
     return exp_v / np.sum(exp_v)
 
 
-def relu(x: np.ndarray) -> np.ndarray:
+def relu(x: np.ndarray, derivative=False) -> np.ndarray:
+    if derivative:
+        return x > 0
     return x * (x > 0)
 
 
