@@ -17,6 +17,9 @@ class NNLayer:
         self.output_linear = None
         self.activation_func = activation_func
 
+    def __str__(self):
+        return f'[ {self.W.shape[0]} => {self.W.shape[1]}\tlr:{self.lr}\tactivation:{self.activation_func.__name__} ]' # noqa
+
     def forward(self, V: np.ndarray) -> np.ndarray:
         self.input = normalize(V)
         self.output_linear = self.input @ self.W + self.B
@@ -49,6 +52,9 @@ class DeepNNLayer:
                         lr,
                         activation_func)
                 )
+
+    def __str__(self):
+        return '\n'.join([str(layer) for layer in self.layers])
 
     def forward(self, v: np.ndarray) -> np.ndarray:
         for layer in self.layers:

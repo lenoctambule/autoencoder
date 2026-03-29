@@ -51,8 +51,7 @@ def mnist_test(filename: str):
     x_train = x_train / 255
     x_test = x_test / 255
     autoencoder: Autoencoder = Autoencoder.load(filename)
-    for i in autoencoder.encoder.layers:
-        print(len(i.input), len(i.output))
+    print(autoencoder)
     idx = np.random.randint(0, len(x_test))
     example: np.ndarray = x_test[idx]
     output, code = autoencoder.forward(example.flatten())

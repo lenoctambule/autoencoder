@@ -17,6 +17,9 @@ class Autoencoder:
         self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
         self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
 
+    def __str__(self):
+        return f'Encoder:\n{self.encoder}\n\nDecoder:\n{self.decoder}'
+
     def loss(self, data_set: list[np.ndarray]) -> float:
         loss = 0
         for x in data_set:
