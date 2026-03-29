@@ -17,8 +17,14 @@ $ py mnist_test.py
 Instatiate an `Autoencoder` object :
 ```py
 from autoencoder import Autoencoder
+from activations import LeakyReLU
 
-autoencoder = Autoencoder(in_len=300, bottleneck=50, 0.001, relu)
+autoencoder = Autoencoder(
+    [768, 64, 16],
+    [16, 64, 768],
+    0.01,
+    LeakyReLU()
+)
 ```
 And then via the `train_dataset` method to train over a dataset :
 ```py
@@ -31,9 +37,10 @@ autoencoder.train(v)
 
 ## Inference
 
-Use your `Autoencoder` object with the `encode` and `decode` methods like so :
+Use your `Autoencoder` object with the `encode`, `decode`, `forward` methods like so :
 ```py
 example = ...
 code = autoencoder.encode(example)
 output = autoencoder.decode(code)
+output, code = autoencoder.forward(example)
 ```
