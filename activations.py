@@ -25,3 +25,11 @@ class LeakyReLU(ActivationFunc):
 
     def derivative(self, x):
         return (x > 0) + self.k * (x <= 0)
+
+
+class Identity(ActivationFunc):
+    def __call__(self, x):
+        return x
+
+    def derivative(x):
+        return 1
