@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class ActivationFunc(ABC):
     @abstractmethod
-    def derivative(v: np.ndarray) -> np.ndarray:
+    def d(v: np.ndarray) -> np.ndarray:
         pass
 
 
@@ -12,7 +12,7 @@ class ReLU(ActivationFunc):
     def __call__(self, x):
         return x * (x > 0)
 
-    def derivative(self, x):
+    def d(self, x):
         return x > 0
 
 
@@ -23,7 +23,7 @@ class LeakyReLU(ActivationFunc):
     def __call__(self, x):
         return x * (x > 0) + self.k * x * (x <= 0)
 
-    def derivative(self, x):
+    def d(self, x):
         return (x > 0) + self.k * (x <= 0)
 
 
@@ -31,5 +31,5 @@ class Identity(ActivationFunc):
     def __call__(self, x):
         return x
 
-    def derivative(x):
+    def d(x):
         return 1

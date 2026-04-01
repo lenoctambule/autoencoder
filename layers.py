@@ -20,8 +20,8 @@ class NNLayer:
     def __str__(self):
         return f'[ {self.W.shape[0]} => {self.W.shape[1]}\tlr:{self.lr}\tactivation:{self.activation_func.__class__.__name__} ]' # noqa
 
-    def forward(self, V: np.ndarray) -> np.ndarray:
-        self.input = normalize(V)
+    def forward(self, v: np.ndarray) -> np.ndarray:
+        self.input = normalize(v)
         self.output_linear = self.input @ self.W + self.B
         self.output = self.activation_func(
                 self.output_linear
@@ -38,6 +38,33 @@ class NNLayer:
         return ret
 
 
+class SampleLayer:
+    def __init__(self,
+                 in_size: int,
+                 lr: float,
+                 activation_func: ActivationFunc):
+        self.input = None
+        self.mean_nn = NNLayer(
+            in_size,
+            in_size,
+            lr,
+            activation_func)
+        self.std_nn = NNLayer(
+            in_size,
+            in_size,
+            lr,
+            activation_func)
+
+    def forward(self, v: np.ndarray) -> np.ndarray:
+        self.input = v
+        mean = self.mean_nn.forward(v)
+        std = self.std_nn.forward(v)
+        return np.random.normal(mean, std, 1)
+
+    def backprop(self, errors: np.ndarray) -> np.ndarray:
+        pass
+
+
 class DeepNNLayer:
     def __init__(self,
                  layers: list[int],
@@ -52,6 +79,8 @@ class DeepNNLayer:
                         lr,
                         activation_func)
                 )
+        self.in_size = layers[0]
+        self.out_size = layers[-1]
 
     def __str__(self):
         return '\n'.join([str(layer) for layer in self.layers])
