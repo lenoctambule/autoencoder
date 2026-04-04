@@ -29,7 +29,6 @@ def mnist_train(
     x_test.resize(x_test.shape[0], in_len)
     x_train = x_train / 255
     x_test = x_test / 255
-    x_train = x_train[:5000]
     if os.path.exists(filename):
         autoencoder = cls.load(filename)
     else:

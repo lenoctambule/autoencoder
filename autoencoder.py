@@ -143,7 +143,7 @@ class VariationalAutoencoder(AAutoencoder):
         return data.item()
 
     def train(self, v: np.ndarray) -> float:
-        out = self.forward(v)
+        out, _ = self.forward(v)
         error = out - v
         self.encoder.backprop(
             self.sampler.backprop(
@@ -152,7 +152,7 @@ class VariationalAutoencoder(AAutoencoder):
         )
         return np.sum(np.abs(error)) / len(v)
 
-    def forward(self, v: np.ndarray) -> np.ndarray:
+    def forward(self, v: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         code = self.encoder.forward(v)
         sample = self.sampler.forward(code)
         out = self.decoder.forward(sample)
