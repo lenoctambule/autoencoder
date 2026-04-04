@@ -29,7 +29,7 @@ class NNLayer:
         return self.output
 
     def backprop(self, error: np.ndarray) -> np.ndarray:
-        error *= self.activation_func.derivative(self.output_linear)
+        error *= self.activation_func.d(self.output_linear)
         ret = self.W @ error
         dW = np.outer(self.input, error) * self.lr
         dB = error * self.lr
@@ -57,12 +57,15 @@ class SampleLayer:
 
     def forward(self, v: np.ndarray) -> np.ndarray:
         self.input = v
-        mean = self.mean_nn.forward(v)
-        std = self.std_nn.forward(v)
-        return np.random.normal(mean, std, 1)
+        self.mean = self.mean_nn.forward(v)
+        self.std = self.std_nn.forward(v)
+        self.eps = np.random.normal(0, 1)
+        return self.eps * self.std + self.mean
 
-    def backprop(self, errors: np.ndarray) -> np.ndarray:
-        pass
+    def backprop(self, error: np.ndarray) -> np.ndarray:
+        mu_error = self.mean_nn.backprop(error)
+        std_error = self.std_nn.backprop(self.eps * error)
+        return mu_error + std_error
 
 
 class DeepNNLayer:

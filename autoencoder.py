@@ -121,7 +121,6 @@ class VariationalAutoencoder(AAutoencoder):
     def __init__(self,
                  encoder_layers: list[int],
                  decoder_layers: list[int],
-                 sampling_size: int,
                  lr: float,
                  activation_func: ActivationFunc):
         if encoder_layers[-1] != decoder_layers[0]:
@@ -131,7 +130,12 @@ class VariationalAutoencoder(AAutoencoder):
         self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
         self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
         self.sampler = SampleLayer(self.encoder.out_size, lr, activation_func)
-        self.sampling_size = sampling_size
+
+    def loss(self, data_set: list[np.ndarray]) -> float:
+        loss = 0
+        for x in data_set:
+            loss += np.sum(np.abs(x - self.forward(x)[0])) / len(x)
+        return loss / len(data_set)
 
     def load(path: str) -> 'ClassicalAutoencoder':
         path = path.removesuffix('.npy') + '.npy'
@@ -139,16 +143,17 @@ class VariationalAutoencoder(AAutoencoder):
         return data.item()
 
     def train(self, v: np.ndarray) -> float:
-        out_enc = self.encoder.forward(v)
-        in_samples = np.zeros(
-                (self.sampling_size, self.encoder.out_size)
+        out = self.forward(v)
+        error = out - v
+        self.encoder.backprop(
+            self.sampler.backprop(
+                self.decoder.backprop(error)
             )
-        out_samples = np.zeros(
-                (self.sampling_size, self.decoder.out_size)
-            )
-        for i in range(self.sampling_size):
-            in_samples[i] = self.sampler.forward(out_enc)
-            out_samples[i] = self.decoder.forward(in_samples[i])
+        )
+        return np.sum(np.abs(error)) / len(v)
 
     def forward(self, v: np.ndarray) -> np.ndarray:
-        pass
+        code = self.encoder.forward(v)
+        sample = self.sampler.forward(code)
+        out = self.decoder.forward(sample)
+        return out, code
