@@ -137,11 +137,6 @@ class VariationalAutoencoder(AAutoencoder):
             loss += np.sum(np.abs(x - self.forward(x)[0])) / len(x)
         return loss / len(data_set)
 
-    def load(path: str) -> 'ClassicalAutoencoder':
-        path = path.removesuffix('.npy') + '.npy'
-        data = np.load(path, allow_pickle=True)
-        return data.item()
-
     def train(self, v: np.ndarray) -> float:
         out, _ = self.forward(v)
         error = out - v

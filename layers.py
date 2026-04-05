@@ -59,12 +59,12 @@ class SampleLayer:
         self.input = v
         self.mean = self.mean_nn.forward(v)
         self.std = self.std_nn.forward(v)
-        self.eps = np.random.normal(0, 1)
+        self.eps = np.random.normal(0, 1, self.mean.shape)
         return self.eps * self.std + self.mean
 
     def backprop(self, error: np.ndarray) -> np.ndarray:
         mu_error = self.mean_nn.backprop(error)
-        std_error = self.std_nn.backprop(self.eps * error)
+        std_error = self.std_nn.backprop(error * self.eps * self.std * 0.5)
         return mu_error + std_error
 
 
