@@ -1,6 +1,5 @@
 import numpy as np
-from utils import normalize
-from activations import ActivationFunc
+from activations import ActivationFunc, Identity
 
 
 class NNLayer:
@@ -9,7 +8,8 @@ class NNLayer:
                  out_size: int,
                  lr: float,
                  activation_func: ActivationFunc):
-        self.W = np.random.uniform(-1, 1, (in_size, out_size))
+        limit = np.sqrt(6 / (in_size + out_size))
+        self.W = np.random.uniform(-limit, limit, (in_size, out_size))
         self.B = np.zeros((out_size))
         self.lr = lr
         self.input = None
@@ -21,7 +21,7 @@ class NNLayer:
         return f'[ {self.W.shape[0]} => {self.W.shape[1]}\tlr:{self.lr}\tactivation:{self.activation_func.__class__.__name__} ]' # noqa
 
     def forward(self, v: np.ndarray) -> np.ndarray:
-        self.input = normalize(v)
+        self.input = v
         self.output_linear = self.input @ self.W + self.B
         self.output = self.activation_func(
                 self.output_linear
@@ -55,17 +55,23 @@ class SampleLayer:
             lr,
             activation_func)
 
+    def DKL(self):
+        return -0.5 * np.mean(1 + self.logvar - self.mean ** 2 - np.exp(self.logvar)) # noqa
+
     def forward(self, v: np.ndarray) -> np.ndarray:
         self.input = v
         self.mean = self.mean_nn.forward(v)
-        self.std = self.std_nn.forward(v)
+        self.logvar = np.clip(self.std_nn.forward(v))
+        self.std = np.exp(0.5 * self.logvar)
         self.eps = np.random.normal(0, 1, self.mean.shape)
-        return self.eps * self.std + self.mean
+        return 0.5 * self.eps * self.std + self.mean
 
     def backprop(self, error: np.ndarray) -> np.ndarray:
-        mu_error = self.mean_nn.backprop(error)
-        std_error = self.std_nn.backprop(error * self.eps * self.std * 0.5)
-        return mu_error + std_error
+        dmean = error + self.mean
+        dstd = error * self.eps + 0.5 * (np.exp(self.logvar) - 1)
+        mean_error = self.mean_nn.backprop(dmean)
+        logvar_error = self.std_nn.backprop(dstd * self.std)
+        return mean_error + logvar_error
 
 
 class DeepNNLayer:
@@ -80,7 +86,8 @@ class DeepNNLayer:
                         layers[i],
                         layers[i+1],
                         lr,
-                        activation_func)
+                        activation_func if i != len(layers) - 2 else Identity()
+                    )
                 )
         self.in_size = layers[0]
         self.out_size = layers[-1]

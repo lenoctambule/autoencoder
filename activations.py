@@ -31,5 +31,5 @@ class Identity(ActivationFunc):
     def __call__(self, x):
         return x
 
-    def d(x):
+    def d(self, x):
         return 1
