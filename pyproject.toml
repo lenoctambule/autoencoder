@@ -1,0 +1,23 @@
+[project]
+name = "easyvae"
+version = "1.0"
+authors = [
+  { name="Ravaka RALAMBOARIVONY", email="ravaka.rlb.pro@gmail.com" },
+]
+description = "Python implementation of a Classical and Variational Autoencoders "
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/lenoctambule/autoencoder"
+Issues = "https://github.com/lenoctambule/autoencoder/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

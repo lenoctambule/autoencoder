@@ -2,24 +2,33 @@
 
 ## Usage 
 
-1. Install requirements :
+1. To install from source :
 ```sh
-$ pip install -r requirements.txt
+$ git clone git@github.com:lenoctambule/autoencoder.git
+$ pip install -e autoencoder/
 ```
 
-2. Optionally run mnist_test.py.
+2. Optionally, run mnist_test.py to see it in action on the MNIST dataset.
 ```sh
+$ cd examples
 $ py mnist_test.py 
 ```
 
 ## Training
 
-Instatiate an `Autoencoder` object :
+Instatiate an `ClassicalAutoencoder` or `VariationalAutoencoder` object :
 ```py
-from autoencoder import Autoencoder
-from activations import LeakyReLU
+from easyvae.autoencoder import ClassicalAutoencoder, VariationalAutoencoder
+from easyvae.activations import LeakyReLU
 
-autoencoder = Autoencoder(
+autoencoder = ClassicalAutoencoder(
+    [768, 64, 16],
+    [16, 64, 768],
+    0.01,
+    LeakyReLU()
+)
+# or
+autoencoder = VariationalAutoencoder(
     [768, 64, 16],
     [16, 64, 768],
     0.01,
@@ -30,9 +39,15 @@ And then via the `train_dataset` method to train over a dataset :
 ```py
 autoencoder.train_dataset(data)
 ```
-Or via the `train` to input each data points iteratively :
+Or via the `train` method to input each data points iteratively :
 ```py
 autoencoder.train(v)
+```
+
+After training, you can save your model via the `save` method and load that model using `load` method :
+```
+autoencoder.save("mymodel.npy)
+autoencoder.load("mymodel.npy")
 ```
 
 ## Inference

@@ -1,5 +1,5 @@
 import numpy as np
-from activations import ActivationFunc, Identity
+from .activations import ActivationFunc, Identity
 
 
 class NNLayer:

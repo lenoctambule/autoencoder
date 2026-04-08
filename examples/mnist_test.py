@@ -2,10 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import signal
-from autoencoder import (VariationalAutoencoder, # noqa
-                         ClassicalAutoencoder,
-                         AAutoencoder)
-from activations import LeakyReLU
+from easyvae.autoencoder import ( # noqa
+        VariationalAutoencoder,
+        ClassicalAutoencoder,
+        AAutoencoder
+    )
+from easyvae.activations import LeakyReLU
 
 
 def load_mnist() -> list[np.ndarray]:

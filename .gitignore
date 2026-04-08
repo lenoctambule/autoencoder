@@ -3,3 +3,5 @@ __pycache__
 *.npz
 *.npy
 .venv
+dist
+*.egg-info

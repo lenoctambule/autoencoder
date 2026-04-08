@@ -1,10 +1,12 @@
 import numpy as np
-from utils import (dynamic_loss_plot_init,
-                   dynamic_loss_plot_update,
-                   dynamic_loss_plot_finish)
+from .utils import (
+        dynamic_loss_plot_init,
+        dynamic_loss_plot_update,
+        dynamic_loss_plot_finish
+    )
 from tqdm import tqdm
-from layers import DeepNNLayer, SampleLayer
-from activations import ActivationFunc, Identity
+from .layers import DeepNNLayer, SampleLayer
+from .activations import ActivationFunc, Identity
 from abc import ABC, abstractmethod
 
 LOADER = ['⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿']
