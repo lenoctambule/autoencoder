@@ -8,6 +8,11 @@ $ git clone git@github.com:lenoctambule/autoencoder.git
 $ pip install -e autoencoder/
 ```
 
+Or install from PyPI :
+```sh
+$ pip install easyvae
+```
+
 2. Optionally, run mnist_test.py to see it in action on the MNIST dataset.
 ```sh
 $ cd examples
