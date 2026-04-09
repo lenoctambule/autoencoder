@@ -1,15 +1,18 @@
 # Python AutoEncoder from scratch using Numpy
-<center>
-    <figure>
-    <img
-    src="./media/latent-space.png"
-    alt="Latent-space of the MNIST dataset"
-    width=70%>
-    <figcaption>
-        Latent-space representation of the MNIST dataset using Variational Autoencoder
-    </figcaption>
-    </figure>
-</center>
+
+<figure>
+    <p align="center">
+        <img
+        src="https://raw.githubusercontent.com/lenoctambule/autoencoder/refs/heads/main/media/latent-space.png"
+        alt="Latent-space of the MNIST dataset"
+        width=70%>
+        <figcaption align=center>
+            <p align="center">
+            Latent-space representation of the MNIST dataset using Variational Autoencoder
+            </p>
+        </figcaption>
+    </p>
+</figure>
 
 ## Usage 
 
