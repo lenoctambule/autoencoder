@@ -1,6 +1,5 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def softmax(v: np.ndarray) -> np.ndarray:
@@ -19,28 +18,3 @@ def regularize(v: np.ndarray) -> np.ndarray:
     if v_min - v_max == 0:
         return v
     return (v - v_min) / (v_max - v_min)
-
-
-def dynamic_loss_plot_init(losses: list):
-    plt.ion()
-    fig, ax = plt.subplots()
-    line, = ax.plot([0], losses, label="Loss")
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    ax.set_title("Training Loss")
-    ax.legend()
-    return ax, line
-
-
-def dynamic_loss_plot_update(ax, line, loss):
-    line.set_xdata(range(len(loss)))
-    line.set_ydata(loss)
-    ax.relim()
-    ax.autoscale_view()
-    plt.draw()
-    plt.pause(0.1)
-
-
-def dynamic_loss_plot_finish():
-    plt.ioff()
-    plt.show()
