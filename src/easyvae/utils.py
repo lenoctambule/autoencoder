@@ -41,6 +41,6 @@ def dynamic_loss_plot_update(ax, line, loss):
     plt.pause(0.1)
 
 
-def dynamic_loss_plot_finish(ax, line):
+def dynamic_loss_plot_finish():
     plt.ioff()
     plt.show()
