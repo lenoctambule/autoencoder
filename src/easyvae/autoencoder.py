@@ -64,7 +64,7 @@ class AAutoencoder(ABC):
                     break
                 epoch += 1
         if display_loss is True:
-            dynamic_loss_plot_finish(ax, line)
+            dynamic_loss_plot_finish()
         return losses
 
     def save(self, path: str):
