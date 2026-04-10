@@ -65,7 +65,7 @@ autoencoder.train(v)
 
 After training, you can save your model via the `save` method and load that model using `load` method :
 ```
-autoencoder.save("mymodel.npy)
+autoencoder.save("mymodel.npy")
 autoencoder.load("mymodel.npy")
 ```
 
