@@ -1,14 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import signal
 from easyvae.autoencoder import ( # noqa
         VariationalAutoencoder,
         ClassicalAutoencoder,
         AAutoencoder
     )
 from easyvae.activations import LeakyReLU
-from easyvae.utils import dynamic_loss_plot_finish
 
 
 def load_mnist() -> list[np.ndarray]:
@@ -42,17 +40,7 @@ def mnist_train(
             0.0001,
             LeakyReLU()
         )
-
-    def handler(signum, frame):
-        print(f"Saving {filename} before exit ...")
-        autoencoder.save(filename)
-        if plt.get_fignums():
-            dynamic_loss_plot_finish()
-        mnist_test(autoencoder)
-        exit()
-
-    signal.signal(signal.SIGINT, handler)
-    print("CTRL+C to exit and save model.")
+    print("CTRL+C to interrupt training.")
     autoencoder.train_dataset(
         x_train,
         max_epoch,
@@ -84,10 +72,11 @@ def plot_mnist_latent_space(autoencoder: AAutoencoder, x: np.ndarray, y,):
         plt.show()
 
 
-def plot_random_reconstruction(autoencoder: AAutoencoder,
-                               example: np.ndarray,
-                               img_shape,
-                               y):
+def plot_random_reconstruction(
+        autoencoder: AAutoencoder,
+        example: np.ndarray,
+        img_shape,
+        y):
     output, code = autoencoder.forward(example.flatten())
     plt.subplot(1, 2, 1)
     plt.matshow(
@@ -99,7 +88,7 @@ def plot_random_reconstruction(autoencoder: AAutoencoder,
         output.reshape(img_shape),
         fignum=False)
     plt.title(f"Output ({y})")
-    print(f'{code=}')
+    print(f'{code.tolist()}')
 
 
 def mnist_test(model: str | AAutoencoder):
@@ -114,6 +103,8 @@ def mnist_test(model: str | AAutoencoder):
         autoencoder: AAutoencoder = AAutoencoder.load(model)
     else:
         autoencoder = model
+    print("Testing model ...\n")
+    print(autoencoder)
     idx = np.random.randint(0, len(x_test))
     example: np.ndarray = x_test[idx]
     plot_random_reconstruction(autoencoder, example, img_shape, y_test[idx])

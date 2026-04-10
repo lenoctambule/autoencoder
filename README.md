@@ -6,7 +6,7 @@
         src="https://raw.githubusercontent.com/lenoctambule/autoencoder/refs/heads/main/media/latent-space.png"
         alt="Latent-space of the MNIST dataset"
         width=70%>
-        <figcaption align=center>
+        <figcaption>
             <p align="center">
             Latent-space representation of the MNIST dataset using Variational Autoencoder
             </p>
