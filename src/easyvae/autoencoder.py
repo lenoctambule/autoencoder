@@ -96,7 +96,7 @@ class ClassicalAutoencoder(AAutoencoder):
                 f"Type: {__class__.__name__}",
                 "Encoder:",
                 f"{self.encoder}",
-                "Decoder:"
+                "Decoder:",
                 f"{self.decoder}"
             ))
 
@@ -132,6 +132,15 @@ class VariationalAutoencoder(AAutoencoder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sampler = SampleLayer(self.encoder.out_size, self.lr, Identity())
+
+    def __str__(self):
+        return "\n".join((
+                f"Type: {__class__.__name__}",
+                "Encoder:",
+                f"{self.encoder}",
+                "Decoder:",
+                f"{self.decoder}"
+            ))
 
     def loss(self, data_set: list[np.ndarray]) -> float:
         loss = 0
