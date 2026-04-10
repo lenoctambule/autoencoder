@@ -1,10 +1,10 @@
 [project]
 name = "easyvae"
-version = "1.1"
+version = "1.2"
 authors = [
   { name="Ravaka RALAMBOARIVONY", email="ravaka.rlb.pro@gmail.com" },
 ]
-description = "Python implementation of a Classical and Variational Autoencoders "
+description = "Python implementation of a Classical and Variational Autoencoders using NumPy"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
