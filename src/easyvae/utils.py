@@ -18,3 +18,12 @@ def regularize(v: np.ndarray) -> np.ndarray:
     if v_min - v_max == 0:
         return v
     return (v - v_min) / (v_max - v_min)
+
+
+def interruptable(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyboardInterrupt:
+            pass
+    return inner

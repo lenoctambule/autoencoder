@@ -15,7 +15,7 @@ class Plotter:
     def close(self):
         pass
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __del__(self):
         self.close()
 
 
@@ -45,7 +45,7 @@ class CAPlotter(Plotter):
 
     def close(self):
         plt.ioff()
-        plt.show()
+        plt.close(self.fig)
 
 
 class VAEPlotter(Plotter):
@@ -90,4 +90,4 @@ class VAEPlotter(Plotter):
 
     def close(self):
         plt.ioff()
-        plt.show()
+        plt.close(self.fig)

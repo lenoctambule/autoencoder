@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import signal
 from easyvae.autoencoder import ( # noqa
         VariationalAutoencoder,
         ClassicalAutoencoder,
@@ -32,7 +31,6 @@ def mnist_train(
     x_train.resize(x_train.shape[0], in_len)
     x_test.resize(x_test.shape[0], in_len)
     x_train = x_train / 255
-    x_train = x_train[:5000]
     if os.path.exists(filename):
         autoencoder = cls.load(filename)
     else:
@@ -42,17 +40,7 @@ def mnist_train(
             0.0001,
             LeakyReLU()
         )
-
-    def handler(signum, frame):
-        print(f"Saving {filename} before exit ...")
-        autoencoder.save(filename)
-        plt.close('all')
-        plt.ioff()
-        mnist_test(autoencoder)
-        exit()
-
-    signal.signal(signal.SIGINT, handler)
-    print("CTRL+C to exit and save model.")
+    print("CTRL+C to interrupt training.")
     autoencoder.train_dataset(
         x_train,
         max_epoch,
@@ -100,7 +88,7 @@ def plot_random_reconstruction(
         output.reshape(img_shape),
         fignum=False)
     plt.title(f"Output ({y})")
-    print(f'{code=}')
+    print(f'{code.tolist()}')
 
 
 def mnist_test(model: str | AAutoencoder):
