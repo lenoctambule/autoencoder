@@ -28,7 +28,7 @@ class NNLayer:
                 self.output_linear
             )
         return self.output
-    
+
     def back(self, error: np.ndarray) -> np.ndarray:
         self.error = error * self.activation_func.d(self.output_linear)
         return self.W @ self.error
@@ -115,3 +115,12 @@ class DeepNNLayer:
         for layer in self.layers:
             layer.backprop()
 
+
+class NoiseLayer:
+    def __init__(self, amount=0.1):
+        self.amount = amount
+
+    def forward(self, v: np.ndarray):
+        if self.amount == 0:
+            return v
+        return v + np.random.normal(0, self.amount, v.shape)
