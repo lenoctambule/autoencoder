@@ -82,9 +82,11 @@ class ClassicalAutoencoder(AAutoencoder):
             self.encoder.forward(v)
         )
         error = out - v
-        self.encoder.backprop(
-            self.decoder.backprop(error)
+        self.encoder.back(
+            self.decoder.back(error)
         )
+        self.encoder.backprop()
+        self.decoder.backprop()
         return np.sum(np.abs(error)) / len(v)
 
     @interruptable
@@ -109,7 +111,7 @@ class ClassicalAutoencoder(AAutoencoder):
                     error += self.train(x)
                 error /= len(data_set)
                 derror = prev_error - error
-                if derror <= 0 or abs(derror) < 1e-4:
+                if abs(derror) < 1e-4:
                     no_improv += 1
                 else:
                     no_improv = 0
@@ -167,11 +169,14 @@ class VariationalAutoencoder(AAutoencoder):
     def train(self, v: np.ndarray) -> tuple[float, float]:
         out, _ = self.forward(v)
         error = out - v
-        self.encoder.backprop(
-            self.sampler.backprop(
-                self.decoder.backprop(error)
+        self.encoder.back(
+            self.sampler.back(
+                self.decoder.back(error)
             )
         )
+        self.encoder.backprop()
+        self.sampler.backprop()
+        self.decoder.backprop()
         return np.mean(error ** 2), self.sampler.DKL()
 
     @interruptable
