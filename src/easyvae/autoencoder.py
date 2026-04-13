@@ -232,7 +232,7 @@ class VariationalAutoencoder(AAutoencoder):
         code = self.encoder.forward(v)
         sample = self.sampler.forward(code)
         out = self.decoder.forward(sample)
-        return out, code
+        return out, sample
 
     def encode(self, v: np.ndarray) -> np.ndarray:
         return self.sampler.forward(
