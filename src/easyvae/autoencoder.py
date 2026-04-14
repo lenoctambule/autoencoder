@@ -1,12 +1,13 @@
 import numpy as np
 from tqdm import tqdm
-from .layers import DeepNNLayer, SampleLayer
+from .layers import DeepNNLayer, SampleLayer, NoiseLayer
 from .activations import ActivationFunc, Identity
 from .plotters import Plotter, CAPlotter, VAEPlotter
 from .utils import interruptable
 from abc import ABC, abstractmethod
 
 LOADER = ['⡿', '⣟', '⣯', '⣷', '⣾', '⣽', '⣻', '⢿']
+SQRT_2PI = np.sqrt(2 * np.pi)
 
 
 class AAutoencoder(ABC):
@@ -17,13 +18,15 @@ class AAutoencoder(ABC):
                  encoder_layers: list[int],
                  decoder_layers: list[int],
                  lr: float,
-                 activation_func: ActivationFunc):
+                 activation_func: ActivationFunc,
+                 noise=0):
         if encoder_layers[-1] != decoder_layers[0]:
             raise Exception(
                 f"Encoder output and decoder input don't match {encoder_layers[-1]} != {encoder_layers[0]}" # noqa
             )
         self.encoder = DeepNNLayer(encoder_layers, lr, activation_func)
         self.decoder = DeepNNLayer(decoder_layers, lr, activation_func)
+        self.noise = NoiseLayer(noise)
         self.space_dim = decoder_layers[0]
         self.lr = lr
         self.losses = [0]
@@ -78,13 +81,15 @@ class ClassicalAutoencoder(AAutoencoder):
         return loss / len(data_set)
 
     def train(self, v: np.ndarray):
-        out = self.decoder.forward(
-            self.encoder.forward(v)
+        out, _ = self.forward(
+            self.noise.forward(v)
         )
         error = out - v
-        self.encoder.backprop(
-            self.decoder.backprop(error)
+        self.encoder.back(
+            self.decoder.back(error)
         )
+        self.encoder.backprop()
+        self.decoder.backprop()
         return np.sum(np.abs(error)) / len(v)
 
     @interruptable
@@ -94,7 +99,8 @@ class ClassicalAutoencoder(AAutoencoder):
                       patience: int,
                       display_loss: bool = False) -> list[float]:
         plotter = self.plotter_cls(self) if display_loss else Plotter(self)
-        self.losses = [self.loss(data_set)]
+        if len(self.losses) == 0:
+            self.losses = [self.loss(data_set)]
         epoch = 0
         no_improv = 0
         prev_error = self.losses[0]
@@ -109,7 +115,7 @@ class ClassicalAutoencoder(AAutoencoder):
                     error += self.train(x)
                 error /= len(data_set)
                 derror = prev_error - error
-                if derror <= 0 or abs(derror) < 1e-4:
+                if abs(derror) < 1e-4:
                     no_improv += 1
                 else:
                     no_improv = 0
@@ -165,13 +171,18 @@ class VariationalAutoencoder(AAutoencoder):
         return recon_loss, kl_loss
 
     def train(self, v: np.ndarray) -> tuple[float, float]:
-        out, _ = self.forward(v)
+        out, _ = self.forward(
+            self.noise.forward(v)
+        )
         error = out - v
-        self.encoder.backprop(
-            self.sampler.backprop(
-                self.decoder.backprop(error)
+        self.encoder.back(
+            self.sampler.back(
+                self.decoder.back(error)
             )
         )
+        self.encoder.backprop()
+        self.sampler.backprop()
+        self.decoder.backprop()
         return np.mean(error ** 2), self.sampler.DKL()
 
     @interruptable
@@ -181,9 +192,10 @@ class VariationalAutoencoder(AAutoencoder):
                       patience: int,
                       display_loss: bool = False) -> list[float]:
         plotter = self.plotter_cls(self) if display_loss else Plotter(self)
-        recon_0, kl_0 = self.loss(data_set)
-        self.recon_losses = [recon_0]
-        self.KL_losses = [kl_0]
+        if len(self.recon_losses) == 0:
+            recon_0, kl_0 = self.loss(data_set)
+            self.recon_losses = [recon_0]
+            self.KL_losses = [kl_0]
         epoch = 0
         no_improv = 0
         prev_loss = self.recon_losses[0] + self.KL_losses[0]
@@ -221,12 +233,78 @@ class VariationalAutoencoder(AAutoencoder):
         code = self.encoder.forward(v)
         sample = self.sampler.forward(code)
         out = self.decoder.forward(sample)
-        return out, code
+        return out, sample
 
     def encode(self, v: np.ndarray) -> np.ndarray:
         return self.sampler.forward(
-                self.encoder.forward(v)
-            )
+            self.encoder.forward(v)
+        )
 
     def decode(self, v: np.ndarray) -> np.ndarray:
         return self.decoder.forward(v)
+
+
+class Label:
+    def __init__(self,
+                 name: str,
+                 embedding_size: int,
+                 N=100):
+        self.name = name
+        self.embedding_size = embedding_size
+        self.N = N
+        self.idx = 0
+        self.history = np.zeros((self.N, embedding_size))
+
+    def observe(self, code: np.ndarray):
+        if self.idx < self.N:
+            self.history[self.idx] = code
+            self.idx += 1
+        else:
+            diffs = np.linalg.norm(self.history - code, axis=0)
+            idx = np.argmin(diffs)
+            self.history[idx] = (self.history[idx] + code) / 2
+
+    def p(self, x: np.ndarray):
+        return np.mean(
+            np.exp(-np.abs(self.history - x))
+        )
+
+
+class LabelingVAE(VariationalAutoencoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.labels: list[Label] = []
+        self.labels_idxs: dict[str, int] = {}
+
+    def learn_labels(self, data: np.ndarray, labels: list[list[str]]):
+        self.labels.clear()
+        self.labels_idxs.clear()
+        for x_i, labels_i in zip(data, labels):
+            y_i = self.encode(x_i)
+            for c in labels_i:
+                idx = self.labels_idxs.get(c, None)
+                if idx is None:
+                    label = Label(c, self.encoder.out_size)
+                    self.labels.append(label)
+                    self.labels_idxs[c] = len(self.labels) - 1
+                else:
+                    label = self.labels[idx]
+                label.observe(y_i)
+
+    def label(self, x: np.ndarray):
+        probs = {}
+        total = 0
+        code = self.encode(x)
+        for label in self.labels:
+            p = label.p(code)
+            probs[label.name] = p
+            total += p
+        for k in probs:
+            probs[k] = float(probs[k] / total)
+        return dict(
+            sorted(
+                probs.items(),
+                key=lambda item: item[1],
+                reverse=True
+            )
+        )

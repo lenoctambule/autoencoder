@@ -15,6 +15,7 @@ class NNLayer:
         self.input = None
         self.output = None
         self.output_linear = None
+        self.error = None
         self.activation_func = activation_func
 
     def __str__(self):
@@ -28,14 +29,15 @@ class NNLayer:
             )
         return self.output
 
-    def backprop(self, error: np.ndarray) -> np.ndarray:
-        error *= self.activation_func.d(self.output_linear)
-        ret = self.W @ error
-        dW = np.outer(self.input, error) * self.lr
-        dB = error * self.lr
+    def back(self, error: np.ndarray) -> np.ndarray:
+        self.error = error * self.activation_func.d(self.output_linear)
+        return self.W @ self.error
+
+    def backprop(self) -> np.ndarray:
+        dW = np.outer(self.input, self.error) * self.lr
+        dB = self.error * self.lr
         self.W -= dW
         self.B -= dB
-        return ret
 
 
 class SampleLayer:
@@ -66,12 +68,16 @@ class SampleLayer:
         self.eps = np.random.normal(0, 1, self.mean.shape)
         return 0.5 * self.eps * self.std + self.mean
 
-    def backprop(self, error: np.ndarray) -> np.ndarray:
+    def back(self, error: np.ndarray) -> np.ndarray:
         dmean = error + self.mean
         dstd = error * self.eps + 0.5 * (np.exp(self.logvar) - 1)
-        mean_error = self.mean_nn.backprop(dmean)
-        logvar_error = self.std_nn.backprop(dstd * self.std)
+        mean_error = self.mean_nn.back(dmean)
+        logvar_error = self.std_nn.back(dstd * self.std)
         return mean_error + logvar_error
+
+    def backprop(self):
+        self.mean_nn.backprop()
+        self.std_nn.backprop()
 
 
 class DeepNNLayer:
@@ -100,7 +106,21 @@ class DeepNNLayer:
             v = layer.forward(v)
         return v
 
-    def backprop(self, error: np.ndarray) -> np.ndarray:
+    def back(self, error: np.ndarray):
         for layer in self.layers[::-1]:
-            error = layer.backprop(error)
+            error = layer.back(error)
         return error
+
+    def backprop(self) -> np.ndarray:
+        for layer in self.layers:
+            layer.backprop()
+
+
+class NoiseLayer:
+    def __init__(self, amount=0.1):
+        self.amount = amount
+
+    def forward(self, v: np.ndarray):
+        if self.amount == 0:
+            return v
+        return v + np.random.normal(0, self.amount, v.shape)
