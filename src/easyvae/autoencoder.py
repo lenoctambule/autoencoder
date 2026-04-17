@@ -35,7 +35,7 @@ class AAutoencoder(ABC):
         path = path.removesuffix('.npy')
         np.save(path, self)
 
-    def load(path: str) -> 'ClassicalAutoencoder':
+    def load(path: str) -> 'AAutoencoder':
         path = path.removesuffix('.npy') + '.npy'
         data = np.load(path, allow_pickle=True)
         return data.item()
@@ -56,6 +56,16 @@ class AAutoencoder(ABC):
     def train_dataset(self, *args, **kwargs) -> list[float]:
         pass
 
+    def __str__(self):
+        return "\n".join((
+                    f"Type: {self.__class__.__name__}",
+                    "Encoder:",
+                    f"{self.encoder}",
+                    "Decoder:",
+                    f"{self.decoder}"
+                )
+            )
+
 
 class ClassicalAutoencoder(AAutoencoder):
     plotter_cls = CAPlotter
@@ -63,16 +73,6 @@ class ClassicalAutoencoder(AAutoencoder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.losses = []
-
-    def __str__(self):
-        return "\n".join((
-                    f"Type: {__class__.__name__}",
-                    "Encoder:",
-                    f"{self.encoder}",
-                    "Decoder:",
-                    f"{self.decoder}"
-                )
-            )
 
     def loss(self, data_set: list[np.ndarray]) -> float:
         loss = 0
@@ -148,15 +148,6 @@ class VariationalAutoencoder(AAutoencoder):
         self.sampler = SampleLayer(self.encoder.out_size, self.lr, Identity())
         self.KL_losses = []
         self.recon_losses = []
-
-    def __str__(self):
-        return "\n".join((
-                f"Type: {__class__.__name__}",
-                "Encoder:",
-                f"{self.encoder}",
-                "Decoder:",
-                f"{self.decoder}"
-            ))
 
     def loss(self, data_set: list[np.ndarray]) -> float:
         kl_loss = 0
