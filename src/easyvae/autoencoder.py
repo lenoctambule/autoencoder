@@ -260,7 +260,7 @@ class Label:
             self.history[self.idx] = code
             self.idx += 1
         else:
-            diffs = np.linalg.norm(self.history - code, axis=0)
+            diffs = np.linalg.norm(self.history - code, axis=1)
             idx = np.argmin(diffs)
             self.history[idx] = (self.history[idx] + code) / 2
 
