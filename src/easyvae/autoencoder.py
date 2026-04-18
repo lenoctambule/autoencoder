@@ -35,7 +35,7 @@ class AAutoencoder(ABC):
         path = path.removesuffix('.npy')
         np.save(path, self)
 
-    def load(path: str) -> 'ClassicalAutoencoder':
+    def load(path: str) -> 'AAutoencoder':
         path = path.removesuffix('.npy') + '.npy'
         data = np.load(path, allow_pickle=True)
         return data.item()
@@ -56,6 +56,16 @@ class AAutoencoder(ABC):
     def train_dataset(self, *args, **kwargs) -> list[float]:
         pass
 
+    def __str__(self):
+        return "\n".join((
+                    f"Type: {self.__class__.__name__}",
+                    "Encoder:",
+                    f"{self.encoder}",
+                    "Decoder:",
+                    f"{self.decoder}"
+                )
+            )
+
 
 class ClassicalAutoencoder(AAutoencoder):
     plotter_cls = CAPlotter
@@ -63,16 +73,6 @@ class ClassicalAutoencoder(AAutoencoder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.losses = []
-
-    def __str__(self):
-        return "\n".join((
-                    f"Type: {__class__.__name__}",
-                    "Encoder:",
-                    f"{self.encoder}",
-                    "Decoder:",
-                    f"{self.decoder}"
-                )
-            )
 
     def loss(self, data_set: list[np.ndarray]) -> float:
         loss = 0
@@ -103,7 +103,7 @@ class ClassicalAutoencoder(AAutoencoder):
             self.losses = [self.loss(data_set)]
         epoch = 0
         no_improv = 0
-        prev_error = self.losses[0]
+        prev_error = self.losses[-1]
         with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar:
             while True:
                 lbar.set_description(
@@ -149,15 +149,6 @@ class VariationalAutoencoder(AAutoencoder):
         self.KL_losses = []
         self.recon_losses = []
 
-    def __str__(self):
-        return "\n".join((
-                f"Type: {__class__.__name__}",
-                "Encoder:",
-                f"{self.encoder}",
-                "Decoder:",
-                f"{self.decoder}"
-            ))
-
     def loss(self, data_set: list[np.ndarray]) -> float:
         kl_loss = 0
         recon_loss = 0
@@ -198,7 +189,7 @@ class VariationalAutoencoder(AAutoencoder):
             self.KL_losses = [kl_0]
         epoch = 0
         no_improv = 0
-        prev_loss = self.recon_losses[0] + self.KL_losses[0]
+        prev_loss = self.recon_losses[-1] + self.KL_losses[-1]
         with tqdm(bar_format="{desc} {elapsed} {rate_fmt}") as lbar:
             while True:
                 lbar.set_description(
@@ -260,14 +251,12 @@ class Label:
             self.history[self.idx] = code
             self.idx += 1
         else:
-            diffs = np.linalg.norm(self.history - code, axis=0)
+            diffs = np.linalg.norm(self.history - code, axis=1)
             idx = np.argmin(diffs)
             self.history[idx] = (self.history[idx] + code) / 2
 
     def p(self, x: np.ndarray):
-        return np.mean(
-            np.exp(-np.abs(self.history - x))
-        )
+        return 1 / (1e-4 + np.mean(np.abs(self.history - x)))
 
 
 class LabelingVAE(VariationalAutoencoder):
