@@ -1,6 +1,6 @@
 [project]
 name = "easyvae"
-version = "1.3"
+version = "1.3.2"
 authors = [
   { name="Ravaka RALAMBOARIVONY", email="ravaka.rlb.pro@gmail.com" },
 ]
