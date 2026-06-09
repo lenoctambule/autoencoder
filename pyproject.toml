@@ -1,6 +1,6 @@
 [project]
 name = "easyvae"
-version = "1.3"
+version = "1.3.3"
 authors = [
   { name="Ravaka RALAMBOARIVONY", email="ravaka.rlb.pro@gmail.com" },
 ]
@@ -13,6 +13,11 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "tqdm",
+]
 
 [project.urls]
 Homepage = "https://github.com/lenoctambule/autoencoder"
